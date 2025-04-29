@@ -13,13 +13,14 @@ await connectDB()
 //middlewares
 app.use(cors())
 
-//routes
-app.get('/', (req,res)=> res.send("API working"))
-app.post('/clerk', express.json(), clerkWebnhooks)
+//regular routes
+app.get('/', (req, res) => res.send("API working"))
+
+// Clerk webhook route (must use express.raw)
+app.post('/clerk', express.raw({ type: 'application/json' }), clerkWebnhooks)
 
 //port
 const PORT = process.env.PORT || 5000
-
-app.listen(PORT,()=>{
+app.listen(PORT, () => {
     console.log(`server is running on port ${PORT}`)
 })
