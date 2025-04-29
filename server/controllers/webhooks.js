@@ -19,7 +19,7 @@ export const clerkWebnhooks = async (req, res) => {
 
                 const userData = {
                     _id: data.id,
-                    email: data.email_address[0].email.address,
+                    email: data.email_addresses[0].email.address,
                     name: data.first_name + " " + data.last_name,
                     imageUrl: data.image_url,
                 }
@@ -53,7 +53,7 @@ export const clerkWebnhooks = async (req, res) => {
         }
 
     } catch (error) {
-        res.jsos({ success: false, message: error.message })
+        res.json({ success: false, message: error.message })
     }
 
 
