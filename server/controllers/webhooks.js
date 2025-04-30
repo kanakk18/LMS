@@ -1,18 +1,20 @@
+import connectDB from "../utils/connectDB.js"; // Adjust path if needed
 import { Webhook } from "svix";
 import User from "../models/User.js";
 
 export const clerkWebnhooks = async (req, res) => {
   try {
-    const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET); // make sure env var is correct
+    await connectDB(); // ✅ CONNECT FIRST
 
-    const payload = req.body.toString(); // get raw body
+    const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
+    const payload = req.body.toString();
     const headers = {
       "svix-id": req.headers["svix-id"],
       "svix-timestamp": req.headers["svix-timestamp"],
       "svix-signature": req.headers["svix-signature"],
     };
 
-    const evt = wh.verify(payload, headers); // verify signature
+    const evt = wh.verify(payload, headers);
     const { data, type } = JSON.parse(payload);
 
     console.log("📩 Webhook received:", type);
