@@ -3,20 +3,22 @@ import User from "../models/User.js";
 
 export const clerkWebnhooks = async (req, res) => {
   try {
-    const whook = new Webhook(process.env.clerkWebnhooks);
+    const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET); // make sure env var is correct
 
-    const evt = await whook.verify(JSON.stringify(req.body), {
+    const payload = req.body.toString(); // get raw body
+    const headers = {
       "svix-id": req.headers["svix-id"],
       "svix-timestamp": req.headers["svix-timestamp"],
       "svix-signature": req.headers["svix-signature"],
-    });
+    };
 
-    const { data, type } = req.body;
+    const evt = wh.verify(payload, headers); // verify signature
+    const { data, type } = JSON.parse(payload);
 
     console.log("📩 Webhook received:", type);
 
     switch (type) {
-      case "user.created": {
+      case "user.created":
         const userData = {
           _id: data.id,
           email: data.email_addresses[0].email_address,
@@ -24,41 +26,31 @@ export const clerkWebnhooks = async (req, res) => {
           imageUrl: data.image_url,
         };
 
-        await User.create(userData)
-          .then(() => console.log("✅ User created in MongoDB"))
-          .catch((err) => console.error("❌ MongoDB create error:", err));
+        await User.create(userData);
+        console.log("✅ User created in MongoDB");
+        break;
 
-        return res.json({});
-      }
-
-      case "user.updated": {
-        const userData = {
+      case "user.updated":
+        await User.findByIdAndUpdate(data.id, {
           email: data.email_addresses[0].email_address,
           name: `${data.first_name} ${data.last_name}`,
           imageUrl: data.image_url,
-        };
+        });
+        console.log("✅ User updated");
+        break;
 
-        await User.findByIdAndUpdate(data.id, userData)
-          .then(() => console.log("✅ User updated"))
-          .catch((err) => console.error("❌ MongoDB update error:", err));
-
-        return res.json({});
-      }
-
-      case "user.deleted": {
-        await User.findByIdAndDelete(data.id)
-          .then(() => console.log("✅ User deleted"))
-          .catch((err) => console.error("❌ MongoDB delete error:", err));
-
-        return res.json({});
-      }
+      case "user.deleted":
+        await User.findByIdAndDelete(data.id);
+        console.log("✅ User deleted");
+        break;
 
       default:
-        console.log("ℹ️ Unknown webhook type");
-        return res.status(400).json({ error: "Unhandled event type" });
+        console.log("⚠️ Unknown event type:", type);
     }
-  } catch (error) {
-    console.error("❌ Webhook error:", error);
-    return res.status(400).json({ success: false, message: error.message });
+
+    return res.status(200).json({ received: true });
+  } catch (err) {
+    console.error("❌ Webhook error:", err.message);
+    return res.status(400).json({ error: err.message });
   }
 };
