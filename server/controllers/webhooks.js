@@ -1,10 +1,10 @@
-import connectDB from "../utils/connectDB.js"; // Adjust path if needed
+import connectDB from "../utils/connectDB.js";
 import { Webhook } from "svix";
 import User from "../models/User.js";
 
 export const clerkWebnhooks = async (req, res) => {
   try {
-    await connectDB(); // ✅ CONNECT FIRST
+    await connectDB();
 
     const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
     const payload = req.body.toString();
