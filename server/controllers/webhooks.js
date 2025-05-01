@@ -1,4 +1,4 @@
-import connectDB from "../utils/connectDB.js";
+import connectDB from "../configs/mongodb.js";
 import { Webhook } from "svix";
 import User from "../models/User.js";
 
