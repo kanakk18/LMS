@@ -3,6 +3,8 @@ import cors from 'cors';
 import 'dotenv/config';
 import connectDB from './configs/mongodb.js';
 import { clerkWebnhooks } from './controllers/webhooks.js';
+import educatorRouter from './routes/clerkWebhookRoute.js';
+import { clerkMiddleware } from '@clerk/express';
 
 const app = express();
 
@@ -11,6 +13,7 @@ await connectDB();
 
 // Middleware for CORS
 app.use(cors());
+app.use(clerkMiddleware())
 
 // ✅ Raw body middleware ONLY for Clerk webhook route
 app.post(
@@ -21,7 +24,7 @@ app.post(
 
 // ✅ JSON parser for other routes (if any in future)
 app.use(express.json());
-
+app.use('/api/educator', express.json(), educatorRouter)
 // Health check
 app.get('/', (req, res) => res.send('API working'));
 
