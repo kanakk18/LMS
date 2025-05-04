@@ -1,8 +1,8 @@
 import express from 'express';
-import { updateRoleToEducator} from '../controllers/educatorController.js';
+import { updateRoleEducator} from '../controllers/educatorController.js';
 
 const educatorRouter = express.Router();
 
 // Clerk webhook route
-educatorRouter.get('/update-role', updateRoleToEducator)
+educatorRouter.get('/update-role', updateRoleEducator)
 export default educatorRouter;
