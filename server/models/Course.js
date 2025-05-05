@@ -1,4 +1,4 @@
-import { User } from "@clerk/express";
+
 import mongoose from "mongoose";
 
 
