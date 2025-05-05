@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 
+// Assuming you have a User model already defined somewhere
+import User from './User'; // Adjust path as per your project structure
+
 const lectureSchema = new mongoose.Schema({
     lecturerId: { type: String, required: true },
     lectureDuration: { type: Number, required: true },
@@ -25,7 +28,10 @@ const courseSchema = new mongoose.Schema({
     discount: { type: Number, required: true, min: 0, max: 100 },
     courseContent: [chapterSchema],
     courseRatings: [
-        { UserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, rating: { type: Number, min: 1, max: 5 } }
+        { 
+            UserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, 
+            rating: { type: Number, min: 1, max: 5 } 
+        }
     ],
     educator: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     enrolledStudents: [
