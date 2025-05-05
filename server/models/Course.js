@@ -1,8 +1,5 @@
 import mongoose from 'mongoose';
 
-// Assuming you have a User model already defined somewhere
-import User from './User'; // Adjust path as per your project structure
-
 const lectureSchema = new mongoose.Schema({
     lecturerId: { type: String, required: true },
     lectureDuration: { type: Number, required: true },
