@@ -1,4 +1,4 @@
-const { clerkClient } = require('@clerk/express');
+import { clerkClient } from '@clerk/express';
 
 // middleware
 const protectEducator = async (req, res, next) => {
@@ -16,4 +16,4 @@ const protectEducator = async (req, res, next) => {
     }
 };
 
-module.exports = { protectEducator };
+export { protectEducator };

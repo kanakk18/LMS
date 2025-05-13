@@ -1,8 +1,8 @@
-const { clerkClient } = require('@clerk/express');
-const Course = require('../models/Course.js');
-const Purchases = require('../models/Purchases.js');
-const { v2: cloudinary } = require('cloudinary');
-const User = require('../models/User.js'); // Ensure User model is imported
+import { clerkClient } from '@clerk/express';
+import Course from '../models/Course.js';
+import Purchases from '../models/Purchases.js';
+import { v2 as cloudinary } from 'cloudinary';
+import User from '../models/User.js'; // Ensure User model is imported
 
 // Update role to educator
 const updateRoleEducator = async (req, res) => {
@@ -119,8 +119,7 @@ const getEnrolledStudentsData = async (req, res) => {
     }
 };
 
-// Export all functions using CommonJS
-module.exports = {
+export {
     updateRoleEducator,
     addCourse,
     getEducatorCourses,
