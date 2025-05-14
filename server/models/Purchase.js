@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
-import Course from "./Course";
+import Course from "./Course.js";
 const PurchaseSchema = new mongoose.Schema({
     CourseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
 
     userId: { type:String, ref: 'User', required: true },
-    
+
     //ijio
 
     amount: { type:Number, required: true },
