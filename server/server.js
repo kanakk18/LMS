@@ -10,32 +10,37 @@ import courseRouter from './routes/courseRoutes.js';
 
 const app = express();
 
-// Connect to MongoDB
-await connectDB();
-await ConnectCloudinary()
+// Connect to MongoDB and Cloudinary
+const init = async () => {
+  await connectDB();
+  await ConnectCloudinary();
 
-// Middleware for CORS
-app.use(cors());
-app.use(clerkMiddleware())
+  // Middleware setup
+  app.use(cors());
+  app.use(clerkMiddleware());
 
-// ✅ Raw body middleware ONLY for Clerk webhook route
-app.post(
-  '/clerk',
-  express.raw({ type: 'application/json' }), // IMPORTANT: keep body as Buffer
-  clerkWebnhooks
-);
+  // ✅ Raw body ONLY for Clerk webhooks
+  app.post(
+    '/clerk',
+    express.raw({ type: 'application/json' }),
+    clerkWebnhooks
+  );
 
-// ✅ JSON parser for other routes (if any in future)
-app.use(express.json());
-app.use('/api/educator', express.json(), educatorRouter)
-// Health check
-app.get('/', (req, res) => res.send('API working'));
-app.post('/clerk' , express.json(), clerkWebnhooks);
-app.use('/api/educator' , express.json(), educatorRouter);
-app.use('/api/course' , express.json(), courseRouter);
+  // ✅ Apply JSON parser AFTER webhook (to avoid body-parser issues with Clerk)
+  app.use(express.json());
 
-// Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
-});
+  // Routes
+  app.use('/api/educator', educatorRouter);
+  app.use('/api/course', courseRouter);
+
+  // Health check
+  app.get('/', (req, res) => res.send('API working'));
+
+  // Start server
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`✅ Server running on port ${PORT}`);
+  });
+};
+
+init();

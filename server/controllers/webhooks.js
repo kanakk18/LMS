@@ -1,46 +1,50 @@
-import User from '../models/User.js'; // Adjust path if needed
+import User from '../models/User.js'; // Make sure this path is correct
 
 export const clerkWebnhooks = async (req, res) => {
   try {
-    const event = req.body;
-    const type = event.type;
-    const data = event.data;
+    const { type, data } = req.body;
 
     switch (type) {
-      case "user.created":
+      case "user.created": {
         const userData = {
           _id: data.id,
-          email: data.email_addresses[0].email_address,
-          name: `${data.first_name} ${data.last_name}`,
-          imageUrl: data.image_url,
+          email: data.email_addresses[0]?.email_address || '',
+          name: `${data.first_name || ''} ${data.last_name || ''}`.trim(),
+          imageUrl: data.image_url || '',
         };
 
         await User.create(userData);
         console.log("✅ User created in MongoDB");
         break;
+      }
 
-      case "user.updated":
-        await User.findByIdAndUpdate(data.id, {
-          email: data.email_addresses[0].email_address,
-          name: `${data.first_name} ${data.last_name}`,
-          imageUrl: data.image_url,
-        });
+      case "user.updated": {
+        await User.findByIdAndUpdate(
+          data.id,
+          {
+            email: data.email_addresses[0]?.email_address || '',
+            name: `${data.first_name || ''} ${data.last_name || ''}`.trim(),
+            imageUrl: data.image_url || '',
+          },
+          { new: true }
+        );
         console.log("✅ User updated");
         break;
+      }
 
-      case "user.deleted":
+      case "user.deleted": {
         await User.findByIdAndDelete(data.id);
         console.log("✅ User deleted");
         break;
+      }
 
       default:
-        console.log("⚠️ Unknown event type:", type);
+        console.warn("⚠️ Unknown Clerk event type:", type);
     }
 
-    res.status(200).json({ message: "Webhook processed" });
-
+    return res.status(200).json({ message: "Webhook processed" });
   } catch (err) {
-    console.error("❌ Error processing webhook:", err);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("❌ Error processing Clerk webhook:", err);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };

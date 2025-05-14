@@ -1,21 +1,25 @@
 import mongoose from 'mongoose';
 
-let isConnected = false; // Track if we are connected
+let isConnected = false; // Track if already connected to MongoDB
 
 const connectDB = async () => {
-  if (isConnected) return; // Return early if already connected
+  if (isConnected) {
+    console.log("ℹ️ Already connected to MongoDB");
+    return;
+  }
 
   try {
-    await mongoose.connect(process.env.MONGODB_URI, {
+    const db = await mongoose.connect(process.env.MONGODB_URI, {
+      dbName: 'lms-db', // ✅ Optional: define DB name if not in URI
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      // Remove useFindAndModify
     });
+
     isConnected = true;
-    console.log('✅ MongoDB connected successfully');
+    console.log(`✅ MongoDB connected: ${db.connection.host}`);
   } catch (err) {
-    console.error('❌ MongoDB connection error:', err);
-    process.exit(1); // Exit on failure
+    console.error("❌ MongoDB connection error:", err.message);
+    process.exit(1); // Optional: Crash if DB connection fails
   }
 };
 
