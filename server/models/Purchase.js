@@ -4,6 +4,8 @@ const PurchaseSchema = new mongoose.Schema({
     CourseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
 
     userId: { type:String, ref: 'User', required: true },
+    
+    //ijio
 
     amount: { type:Number, required: true },
 
