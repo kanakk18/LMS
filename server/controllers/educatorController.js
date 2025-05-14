@@ -1,6 +1,6 @@
 import { clerkClient } from '@clerk/express';
 import Course from '../models/Course.js';
-import Purchases from '../models/Purchases.js';
+import Purchases from '../models/Purchase.js';
 import { v2 as cloudinary } from 'cloudinary';
 import User from '../models/User.js'; // Ensure User model is imported
 
