@@ -49,7 +49,7 @@ const addCourse = async (req, res) => {
         const parsedCourseData = typeof courseData === 'string' ? JSON.parse(courseData) : courseData;
 
         // Assign educator ObjectId
-        parsedCourseData.educator = educator._id;
+        parsedCourseData.educator = educator.clerkId;
 
         // Set isPublished default if not provided
         if (parsedCourseData.isPublished === undefined) {
