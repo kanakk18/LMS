@@ -4,30 +4,31 @@ import User from '../models/User.js';
 
 const ensureMongoUser = async (req, res, next) => {
   try {
-    const { userId } = req.auth;
+    const userId = req.auth.userId;
 
     // Check if user exists in MongoDB
     let mongoUser = await User.findById(userId);
     if (!mongoUser) {
-      // Fetch Clerk user details
+      // Fetch user details from Clerk
       const clerkUser = await clerkClient.users.getUser(userId);
       const name = `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim();
 
-      // Create user in MongoDB
+      // Create new user in MongoDB
       mongoUser = await User.create({
-        _id: userId,
+        _id: userId,                // Use Clerk user ID as Mongo _id
         name,
-        email: clerkUser.emailAddresses[0].emailAddress,
-        imageUrl: clerkUser.imageUrl,
+        email: clerkUser.emailAddresses[0]?.emailAddress || '',
+        imageUrl: clerkUser.imageUrl || '',
+        enrolledCourses: [],
       });
 
-      console.log('✅ New user created in MongoDB:', mongoUser._id);
+      console.log(`Created new user in MongoDB: ${userId}`);
     }
 
     next();
-  } catch (err) {
-    console.error('❌ Error in ensureMongoUser:', err.message);
-    res.status(500).json({ success: false, message: 'MongoDB user creation failed' });
+  } catch (error) {
+    console.error('Error in ensureMongoUser middleware:', error);
+    res.status(500).json({ success: false, message: 'Failed to sync user data.' });
   }
 };
 
