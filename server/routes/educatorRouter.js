@@ -2,10 +2,12 @@ import express from 'express';
 import { addCourse, educatorDashboardData ,getEducatorCourses, getEnrolledStudentsData, updateRoleEducator } from '../controllers/educatorController.js';
 import upload from '../configs/multer.js';
 import { protectEducator } from '../middlewares/authMiddleware.js';
+import ensureMongoUser from '../middlewares/ensureMongoUser.js';
 
 
 const educatorRouter = express.Router();
 
+educatorRouter.use(requireAuth, ensureMongoUser); 
 // Clerk webhook route - changed GET to POST for webhooks
 educatorRouter.post('/update-role', updateRoleEducator);
 
