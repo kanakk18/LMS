@@ -2,15 +2,15 @@ import { clerkClient } from '@clerk/express';
 import Course from '../models/Course.js';
 import Purchases from '../models/Purchase.js';
 import { v2 as cloudinary } from 'cloudinary';
-import User from '../models/User.js'; 
-import Educator from '../models/Educator.js'; // Make sure you have this model
+import User from '../models/User.js';
+import Educator from '../models/Educator.js'; // Educator model that stores Clerk userId and _id
 
 // Update role to educator
 const updateRoleEducator = async (req, res) => {
     try {
         const userId = req.auth.userId;
 
-        // ✅ Ensure Educator document is created with Clerk ID
+        // Create Educator document if not exist
         const existing = await Educator.findOne({ clerkId: userId });
         if (!existing) {
             await Educator.create({ clerkId: userId });
@@ -21,6 +21,7 @@ const updateRoleEducator = async (req, res) => {
                 role: 'educator',
             },
         });
+
         res.json({ success: true, message: 'You can now publish a course.' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -29,50 +30,56 @@ const updateRoleEducator = async (req, res) => {
 
 // Add new course
 const addCourse = async (req, res) => {
-  try {
-    const { courseData } = req.body;
-    const imageFile = req.file;
-    const clerkUserId = req.auth.userId;
+    try {
+        const { courseData } = req.body;
+        const imageFile = req.file;
+        const clerkUserId = req.auth.userId;
 
-    if (!imageFile) {
-      return res.status(400).json({ success: false, message: 'Thumbnail not attached.' });
+        if (!imageFile) {
+            return res.status(400).json({ success: false, message: 'Thumbnail not attached.' });
+        }
+
+        // Find Educator document by Clerk userId
+        const educator = await Educator.findOne({ clerkId: clerkUserId });
+        if (!educator) {
+            return res.status(404).json({ success: false, message: 'Educator not found.' });
+        }
+
+        // Parse courseData JSON if string
+        const parsedCourseData = typeof courseData === 'string' ? JSON.parse(courseData) : courseData;
+
+        // Assign educator ObjectId
+        parsedCourseData.educator = educator._id;
+
+        // Set isPublished default if not provided
+        if (parsedCourseData.isPublished === undefined) {
+            parsedCourseData.isPublished = false;
+        }
+
+        // Create course document
+        const newCourse = await Course.create(parsedCourseData);
+
+        // Upload thumbnail image to Cloudinary
+        const imageUpload = await cloudinary.uploader.upload(imageFile.path);
+        newCourse.courseThumbnail = imageUpload.secure_url;
+        await newCourse.save();
+
+        res.json({ success: true, message: 'Course added successfully.', course: newCourse });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
-
-    // ✅ Find Educator by Clerk ID
-    const educator = await Educator.findOne({ clerkId: clerkUserId });
-    if (!educator) {
-      return res.status(404).json({ success: false, message: 'Educator not found.' });
-    }
-
-    // ✅ Parse and Assign MongoDB ObjectId as educator
-    const parsedCourseData = typeof courseData === 'string' ? JSON.parse(courseData) : courseData;
-    parsedCourseData.educator = educator._id;
-
-    // ✅ Set isPublished default if schema requires
-    if (!parsedCourseData.isPublished) parsedCourseData.isPublished = false;
-
-    const newCourse = await Course.create(parsedCourseData);
-
-    // ✅ Upload image to Cloudinary
-    const imageUpload = await cloudinary.uploader.upload(imageFile.path);
-    newCourse.courseThumbnail = imageUpload.secure_url;
-    await newCourse.save();
-
-    res.json({ success: true, message: 'Course added successfully.', course: newCourse });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
 };
 
-
-// Other controller methods (unchanged)...
+// Other methods unchanged...
 
 const getEducatorCourses = async (req, res) => {
     try {
         const clerkUserId = req.auth.userId;
         const educator = await Educator.findOne({ clerkId: clerkUserId });
+        if (!educator) {
+            return res.status(404).json({ success: false, message: 'Educator not found.' });
+        }
         const courses = await Course.find({ educator: educator._id });
-
         res.json({ success: true, courses });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -82,6 +89,9 @@ const getEducatorCourses = async (req, res) => {
 const educatorDashboardData = async (req, res) => {
     try {
         const educator = await Educator.findOne({ clerkId: req.auth.userId });
+        if (!educator) {
+            return res.status(404).json({ success: false, message: 'Educator not found.' });
+        }
         const courses = await Course.find({ educator: educator._id });
         const totalCourses = courses.length;
         const courseIds = courses.map(course => course._id);
@@ -119,6 +129,9 @@ const educatorDashboardData = async (req, res) => {
 const getEnrolledStudentsData = async (req, res) => {
     try {
         const educator = await Educator.findOne({ clerkId: req.auth.userId });
+        if (!educator) {
+            return res.status(404).json({ success: false, message: 'Educator not found.' });
+        }
         const courses = await Course.find({ educator: educator._id });
         const courseIds = courses.map(course => course._id);
 
