@@ -12,10 +12,13 @@ educatorRouter.use(requireAuth);
 educatorRouter.use(ensureMongoUser);
 
 // Public routes (if any) can be here
+educatorRouter.get('/test', (req, res) => {
+  res.json({ success: true, message: 'Educator router working' });
+});
 
 // Protected routes - role based
 educatorRouter.post('/update-role', updateRoleEducator);
-educatorRouter.post('/add-course', protectEducator, upload.single('image'), addCourse);
+educatorRouter.post('/add-course', upload.single('image'), addCourse);
 educatorRouter.get('/courses', protectEducator, getEducatorCourses);
 educatorRouter.get('/dashboard', protectEducator, educatorDashboardData);
 educatorRouter.get('/enrolled-students', protectEducator, getEnrolledStudentsData);

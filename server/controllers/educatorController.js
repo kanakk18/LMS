@@ -31,6 +31,14 @@ const updateRoleEducator = async (req, res) => {
 // ✅ Add new course
 const addCourse = async (req, res) => {
     try {
+
+
+        console.log("🚀 addCourse hit!");
+
+        // Debug data received
+        console.log("Body:", req.body);
+        console.log("File:", req.file);
+
         const { courseData } = req.body;
         const imageFile = req.file;
         const clerkUserId = req.auth.userId;
